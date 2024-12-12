@@ -1,0 +1,4 @@
+# ignore data written to disk
+# used by Quarto report
+*.rds
+*.tsv

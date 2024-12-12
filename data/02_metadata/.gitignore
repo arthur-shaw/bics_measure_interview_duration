@@ -1,0 +1,2 @@
+# ignore JSON representation of Survey Solutions questionnaire
+*.json

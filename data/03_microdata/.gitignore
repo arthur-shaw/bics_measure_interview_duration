@@ -1,0 +1,5 @@
+# ignore downloaded zip archives
+*.zip
+
+# ignore unpacked archives
+*/*

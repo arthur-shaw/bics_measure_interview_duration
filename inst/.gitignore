@@ -1,0 +1,6 @@
+# ignore any output files
+# html format
+*.html
+
+# Word format
+*.docx

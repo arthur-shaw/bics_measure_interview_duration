@@ -1,0 +1,59 @@
+---
+format: html
+toc: true
+title: "Interview duration stats"
+embed-resources: true
+execute: 
+  echo: false
+  error: false
+  warning: false
+---
+
+## By module, overall
+
+```{r}
+#| label: duration by module
+duration_by_module <- readRDS(
+  file = here::here("data", "04_created", "duration_by_module.rds")
+)
+
+duration_by_module |>
+  gt::gt() |>
+	gt::fmt_number(
+    columns = c(med, sd, min, max),
+    decimals = 2
+  ) |>
+  gt::opt_row_striping(row_striping = TRUE) |>
+	gt::cols_width(section ~ gt::pct(50)) |>
+	gt::opt_interactive(
+    use_search = TRUE,
+    page_size_default = 20,
+    use_resizers = TRUE
+  )
+```
+
+## By module, per person
+
+```{r}
+#| label: duration by module per person
+duration_by_module_per_person <- readRDS(
+  file = here::here("data", "04_created", "duration_by_module_per_person.rds")
+)
+
+duration_by_module_per_person |>
+  gt::gt() |>
+	gt::fmt_number(
+    columns = c(med, sd, min, max),
+    decimals = 2
+  ) |>
+  gt::opt_row_striping(row_striping = TRUE)
+```
+
+## By select questions
+
+TODO
+
+```{r}
+#| label: duration for select questions
+#| eval: false
+```
