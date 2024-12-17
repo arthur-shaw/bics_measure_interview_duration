@@ -9,7 +9,31 @@ execute:
   warning: false
 ---
 
-## By module, overall
+```{r}
+#| label: set table colors
+
+bics_header_color <- "#006a4d"
+bics_row_group_color <- "#6eb6a2"
+
+style_table <- function(
+  gt_tbl,
+  header_color = bics_header_color,
+  row_group_color = bics_row_group_color
+) {
+
+  tbl_styled <- gt_tbl |>
+    gt::tab_options(
+      heading.background.color = header_color,
+      column_labels.background.color = header_color,
+      row_group.background.color = row_group_color
+    )
+
+  return(tbl_styled)
+
+}
+
+```
+
 
 ```{r}
 #| label: duration by module
