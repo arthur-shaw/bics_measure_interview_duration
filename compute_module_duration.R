@@ -243,7 +243,8 @@ indiv_sections <- c(
   "S13A: Social Norms - Reference Groups",
   "S13B-Q1b: Social Norms for %s13pair_male% [Male only]",
   "S13B-Q1a: Social Norms for %s13pair_female% [Female only]",
-  "S13C: Social Norms - Conditionality"
+  "S13C: Social Norms - Conditionality",
+  "S18: Anthropometrics"
 )
 
 duration_by_module_per_person <- paradata_w_section |>
