@@ -117,9 +117,19 @@ duration_by_module_per_person |>
 
 ## By select questions
 
-TODO
-
 ```{r}
 #| label: duration for select questions
-#| eval: false
+
+duration_by_questions_by_module <- readRDS(
+  file = here::here("data", "04_created", "duration_by_questions_by_module.rds")
+)
+
+duration_by_questions_by_module |>
+  gt::gt() |>
+	gt::fmt_number(
+    columns = c(med, sd, min, max),
+    decimals = 2
+  ) |>
+  gt::opt_row_striping(row_striping = TRUE) |>
+	style_table()
 ```

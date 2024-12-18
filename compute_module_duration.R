@@ -406,20 +406,170 @@ saveRDS(
 # Compute duration for particular questions
 # ==============================================================================
 
-# duration_by_question_per_person <- paradata_w_section |>
-#   # drill down to particular questions
-#   dplyr::filter(
-#     variable %in% c(
-# s4a_04
-# s4a_05
-# s4a_06_1
+specific_q_sections <- c(
+  "S4A: Non-Food Expenditures, 30 Day",
+  "S4C: Non-Food Expenditures, 12 Month",
+  "S5A: Food, Last 7 Days",
+  "S2: Dwelling Characterstics (q10-q21 moved before S6 as S2b)"
+)
 
-# # S5a
-# s5a_11
-# s5a_12_1
-#     )
-#   )
+s4a_add_vars <- c(
+  "s4a_04",
+  "s4a_06_1",
+  "s4a_06_2",
+  "s4a_06_3",
+  "s4a_06_4",
+  "s4a_06_5",
+  "s4a_06_6",
+  "s4a_06_7",
+  "s4a_06_8",
+  "s4a_06_9",
+  "s4a_06_10",
+  "s4a_06_11",
+  "s4a_06_12"
+)
 
+s4c_add_vars <- c(
+  "s4c_04",
+  "s4c_06_1",
+  "s4c_06_2",
+  "s4c_06_3",
+  "s4c_06_4",
+  "s4c_06_5",
+  "s4c_06_6",
+  "s4c_06_7",
+  "s4c_06_8",
+  "s4c_06_9",
+  "s4c_06_10",
+  "s4c_06_11",
+  "s4c_06_12"
+)
+
+s5a_add_vars <- c(
+  "s5a_11",
+  "s5a_12_1",
+  "s5a_12_2",
+  "s5a_12_3",
+  "s5a_12_4",
+  "s5a_12_5",
+  "s5a_12_6",
+  "s5a_12_7",
+  "s5a_12_8",
+  "s5a_12_9",
+  "s5a_12_10",
+  "s5a_12_11",
+  "s5a_12_12"
+)
+
+s2_add_vars <- c(
+  "S2_23",
+  "S2_23OTH",
+  "S2_24",
+  "S2_25",
+  "S2_26",
+  "S2_27",
+  "S2_28",
+  "S2_29",
+  "S2_29b"
+)
+
+duration_by_questions_by_module <- paradata_w_section |>
+  # subset to individual sections
+	tidytable::filter(section %in% specific_q_sections) |>
+  tidytable::mutate(
+    section = tidytable::case_when(
+
+      # S4A: Non-Food Expenditures, 30 Day
+      # standard questions
+      section == "S4A: Non-Food Expenditures, 30 Day" &
+        (!variable %in% s4a_add_vars) ~ "S4A: Non-Food, 30 Day",
+      # additional questions
+      section == "S4A: Non-Food Expenditures, 30 Day" &
+        (variable %in% s4a_add_vars) ~ "S4A: Member shares",
+
+      # S4C: Non-Food Expenditures, 12 Month
+      # standard questions
+      section == "S4C: Non-Food Expenditures, 12 Month" &
+        (!variable %in% s4c_add_vars) ~ "S4C: Non-Food, 12 Months",
+      # additional questions
+      section == "S4C: Non-Food Expenditures, 12 Month" &
+        (variable %in% s4c_add_vars) ~ "S4C: Member shares",
+
+      # S5A: Food, Last 7 Days
+      # standard questions
+      section == "S5A: Food, Last 7 Days" &
+        (!variable %in% s5a_add_vars) ~ "S5A: Food, Last 7 Days",
+      # additional questions
+      section == "S5A: Food, Last 7 Days" &
+        (variable %in% s5a_add_vars) ~ "S5A: Member shares",
+
+      # S2: Dwelling Characterstics (q10-q21 moved before S6 as S2b)
+      # standard questions
+      section == "S2: Dwelling Characterstics (q10-q21 moved before S6 as S2b)" &
+        (!variable %in% s2_add_vars) ~ "S2: Dwelling Characteristics",
+      # additional questions
+      section == "S2: Dwelling Characterstics (q10-q21 moved before S6 as S2b)" &
+        (variable %in% s2_add_vars) ~ "S2: Room details",
+      
+      TRUE ~ ""
+
+    )
+  ) |>
+  # compute total by interview
+  tidytable::group_by(interview__id, section) |>
+  tidytable::summarise(
+    elapsed_min = sum(elapsed_min, na.rm = TRUE)
+  ) |>
+  tidytable::ungroup() |>
+  # calcuate statistics by section
+	tidytable::group_by(section) |>
+  tidytable::summarise(
+    med = median(x = elapsed_min, na.rm = TRUE),
+    sd = sd(x = elapsed_min, na.rm = TRUE),
+    min = min(elapsed_min, na.rm = TRUE),
+    max = max(elapsed_min, na.rm = TRUE)
+  ) |>
+	tidytable::ungroup() |>
+  # order sections by assigning numbers and sorting by number
+	dplyr::mutate(
+    section_num = dplyr::case_when(
+      section == "S2: Dwelling Characteristics" ~ 1,
+      section == "S2: Room details" ~ 2,
+      section == "S4A: Non-Food, 30 Day" ~ 3,
+      section == "S4A: Member shares" ~ 4,
+      section == "S4C: Non-Food, 12 Months"~ 5,
+      section == "S4C: Member shares" ~ 6,
+      section == "S5A: Food, Last 7 Days" ~ 7,
+      section == "S5A: Member shares" ~ 8,
+      TRUE ~ NA
+    ),
+    section_group = dplyr::case_when(
+      grepl(x = section, pattern = "^S2") ~ "Section 2: Dwelling characteristics",
+      grepl(x = section, pattern = "^S4A") ~ "Section 4A: Non-Food, 30 Days",
+      grepl(x = section, pattern = "^S4C") ~ "Section 4C: Non-Food, 12 Months",
+      grepl(x = section, pattern = "^S5A") ~ "Section 5A: Food, Last 7 Days",
+      TRUE ~ NA_character_
+    ),
+    section = dplyr::case_when(
+      section == "S2: Dwelling Characteristics" ~ "Core questions",
+      section == "S2: Room details" ~ "Room details",
+      section == "S4A: Non-Food, 30 Day" ~ "Core questions",
+      section == "S4A: Member shares" ~ "Member shares",
+      section == "S4C: Non-Food, 12 Months"~ "Core questions",
+      section == "S4C: Member shares" ~ "Member shares",
+      section == "S5A: Food, Last 7 Days" ~ "Core questions",
+      section == "S5A: Member shares" ~ "Member shares",
+      TRUE ~ NA_character_
+    )
+  ) |>
+	dplyr::arrange(section_num) |>
+	dplyr::select(-section_num) |>
+	dplyr::group_by(section_group)
+
+saveRDS(
+  object = duration_by_questions_by_module,
+  file = here::here("data", "04_created", "duration_by_questions_by_module.rds")
+)
 
 # ==============================================================================
 # Produce report
