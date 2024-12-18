@@ -323,6 +323,13 @@ saveRDS(
 duration_by_module_per_person <- paradata_w_section |>
   # subset to individual sections
 	tidytable::filter(section %in% indiv_sections) |>
+  # collapse/aggregate certain sections
+  tidytable::mutate(
+    section = tidytable::case_when(
+      grepl(x = section, pattern = "^S13") ~ "S13 - Social Norms",
+      TRUE ~ section
+    )
+  ) |>
 	# create person ID from row vector
   tidytable::mutate(
     person_id = tidytable::if_else(
@@ -381,17 +388,7 @@ duration_by_module_per_person <- paradata_w_section |>
       section == "S16: Time Use" ~ 22,
       section == "S17: Child Care" ~ 23,
       section == "S9: Assets, Marriage" ~ 24,
-      section == "S13o:  Social Norms respondents" ~ 25,
-      section == "S13A: Social Norms - Reference Groups" ~ 26,
-      section == "S13B-Q1a: Social Norms for  %s13pair_female%   [Female only]" ~ 27,
-      section == "S13B-Q1b: Social Norms for   %s13pair_male%   [Male only]" ~ 28,
-      section == "S13B-Q2: Social Norms [Both of Couple]" ~ 29,
-      section == "S13B-Q3: Social Norms [Both of Couple]" ~ 30,
-      section == "S13B-Q4: Social Norms [Both of Couple]" ~ 31,
-      section == "S13B-Q567: Social Norms [Both of Couple]" ~ 32,
-      section == "S13C: Social Norms - Conditionality" ~ 33,
-      section == "S13D: Social Norms - Vignettes" ~ 34,
-      section == "S13E: Social Norms - Social Desireablity" ~ 35,
+      grepl(x = section, pattern = "^S13") ~ 25,
       section == "S18: Anthropometrics" ~ 36,
       section == "To Complete Interview" ~ 37,
       TRUE ~ 99
