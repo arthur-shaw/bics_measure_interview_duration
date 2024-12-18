@@ -247,6 +247,79 @@ indiv_sections <- c(
   "S18: Anthropometrics"
 )
 
+# ------------------------------------------------------------------------------
+# overall
+# ------------------------------------------------------------------------------
+
+duration_by_module_indiv_overall <- paradata_w_section |>
+  # subset to individual sections
+	tidytable::filter(section %in% indiv_sections) |>
+  # collapse/aggregate certain sections
+  tidytable::mutate(
+    section = tidytable::case_when(
+      grepl(x = section, pattern = "^S13") ~ "S13 - Social Norms",
+      TRUE ~ section
+    )
+  ) |>
+	tidytable::group_by(section, interview__id) |>
+	tidytable::summarise(
+    tot_duration = sum(elapsed_min, na.rm = TRUE),
+  ) |>
+	tidytable::ungroup() |>
+	tidytable::group_by(section) |>
+  tidytable::summarise(
+    med = median(x = tot_duration, na.rm = TRUE),
+    sd = sd(x = tot_duration, na.rm = TRUE),
+    min = min(tot_duration, na.rm = TRUE),
+    max = max(tot_duration, na.rm = TRUE),
+    n_obs = tidytable::n()
+  ) |>
+	tidytable::ungroup() |>
+	# assign module numbers to facilitate sorting
+  dplyr::mutate(
+    section_num = dplyr::case_when(
+      section == "SA: Interview information" ~ 1,
+      section == "SB: Visits" ~ 2,
+      section == "S1: Household Roster" ~ 3,
+      section == "S2: Dwelling Characterstics (q10-q21 moved before S6 as S2b)" ~ 4,
+      section == "S3: Household Assets" ~ 5,
+      section == "S4A: Non-Food Expenditures, 30 Day" ~ 6,
+      section == "S4C: Non-Food Expenditures, 12 Month" ~ 7,
+      section == "S5A: Food, Last 7 Days" ~ 8,
+      section == "S5B : Household Food Consumption (Recall)" ~ 9,
+      section == "S5C: 24HR FOOD: SHARES" ~ 10,
+      section == "S2b: Dwelling Characterstics (q10-q21)" ~ 11,
+      section == "S6: Land Tenure" ~ 12,
+      section == "S19: Total Expenditure" ~ 13,
+      section == "S8: Health & Expenditure" ~ 14,
+      section == "S7:Education & Expenditure" ~ 15,
+      section == "S14: Non-Food Consumption (7 Days)" ~ 16,
+      section == "S14B: Current Clothes" ~ 17,
+      section == "S15: Food Away From Home" ~ 18,
+      section == "S11: Access/Use Of ICT" ~ 19,
+      section == "S12: Labor" ~ 20,
+      section == "S10: FIES" ~ 21,
+      section == "S16: Time Use" ~ 22,
+      section == "S17: Child Care" ~ 23,
+      section == "S9: Assets, Marriage" ~ 24,
+      grepl(x = section, pattern = "^S13") ~ 25,
+      section == "S18: Anthropometrics" ~ 36,
+      section == "To Complete Interview" ~ 37,
+      TRUE ~ 99
+    )
+  ) |>
+	dplyr::arrange(section_num) |>
+	dplyr::select(-section_num)
+
+saveRDS(
+  object = duration_by_module_indiv_overall,
+  file = here::here("data", "04_created", "duration_by_module_indiv_overall.rds")
+)
+
+# ------------------------------------------------------------------------------
+# by person interviewed
+# ------------------------------------------------------------------------------
+
 duration_by_module_per_person <- paradata_w_section |>
   # subset to individual sections
 	tidytable::filter(section %in% indiv_sections) |>
