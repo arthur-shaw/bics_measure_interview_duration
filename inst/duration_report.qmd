@@ -54,7 +54,8 @@ duration_by_module |>
     use_search = TRUE,
     page_size_default = 20,
     use_resizers = TRUE
-  )
+  ) |>
+	style_table()
 ```
 
 ## By non-individual module, overall
@@ -112,7 +113,8 @@ duration_by_module_per_person |>
     columns = c(med, sd, min, max),
     decimals = 2
   ) |>
-  gt::opt_row_striping(row_striping = TRUE)
+  gt::opt_row_striping(row_striping = TRUE) |>
+	style_table()
 ```
 
 ## By select questions
