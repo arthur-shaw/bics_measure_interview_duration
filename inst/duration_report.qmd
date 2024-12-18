@@ -34,6 +34,7 @@ style_table <- function(
 
 ```
 
+## By each module, overall
 
 ```{r}
 #| label: duration by module
@@ -56,6 +57,24 @@ duration_by_module |>
   )
 ```
 
+## By non-individual module, overall
+
+```{r}
+#| label: duration by non-individual module
+
+duration_by_non_indiv_module <- readRDS(
+  file = here::here("data", "04_created", "duration_by_non_indiv_module.rds")
+)
+
+duration_by_non_indiv_module |>
+	gt::gt() |>
+	gt::fmt_number(
+    columns = c(med, sd, min, max),
+    decimals = 2
+  ) |>
+  gt::opt_row_striping(row_striping = TRUE) |>
+	style_table()
+```
 ## By module, per person
 
 ```{r}

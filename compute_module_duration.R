@@ -149,7 +149,81 @@ saveRDS(
 )
 
 # ==============================================================================
-# Compute duration of individual module by person interviewed
+# Compute duration of non-individual modules
+# ==============================================================================
+
+non_indiv_sections <- c(
+  "SA: Interview information",
+  "SB: Visits",
+  "S1: Household Roster",
+  "S2: Dwelling Characterstics (q10-q21 moved before S6 as S2b)",
+  "S3: Household Assets",
+  "S4A: Non-Food Expenditures, 30 Day",
+  "S4C: Non-Food Expenditures, 12 Month",
+  "S5A: Food, Last 7 Days",
+  "S5B : Household Food Consumption (Recall)",
+  "S5C: 24HR FOOD: SHARES",
+  "S2b: Dwelling Characterstics (q10-q21)",
+  "S6: Land Tenure",
+  "S19: Total Expenditure",
+  "To Complete Interview"
+)
+
+duration_by_non_indiv_module <- paradata_w_section |>
+  # subset to non-individual sections
+	tidytable::filter(section %in% non_indiv_sections) |>
+  # collapse/aggregate certain sections
+  tidytable::mutate(
+    section = tidytable::case_when(
+      grepl(x = section, pattern = "(Food|Non-Food|Total Expenditure)") ~
+        "Food and non-food expenditure",
+      TRUE ~ section
+    )
+  ) |>
+  # compute total by interview
+  tidytable::group_by(interview__id, section) |>
+  tidytable::summarise(
+    elapsed_min = sum(elapsed_min, na.rm = TRUE)
+  ) |>
+  tidytable::ungroup() |>
+  tidytable::group_by(section) |>
+  tidytable::summarise(
+    med = median(x = elapsed_min, na.rm = TRUE),
+    sd = sd(x = elapsed_min, na.rm = TRUE),
+    min = min(elapsed_min, na.rm = TRUE),
+    max = max(elapsed_min, na.rm = TRUE),
+    n_obs = tidytable::n()
+  ) |>
+  tidytable::ungroup() |>
+	# assign module numbers to facilitate sorting
+  dplyr::mutate(
+    section_num = dplyr::case_when(
+      section == "SA: Interview information" ~ 1,
+      section == "SB: Visits" ~ 2,
+      section == "S1: Household Roster" ~ 3,
+      section == "S2: Dwelling Characterstics (q10-q21 moved before S6 as S2b)" ~ 4,
+      section == "S3: Household Assets" ~ 5,
+      section == "Food and non-food expenditure" ~ 6,
+      section == "S5C: 24HR FOOD: SHARES" ~ 10,
+      section == "S2b: Dwelling Characterstics (q10-q21)" ~ 11,
+      section == "S6: Land Tenure" ~ 12,
+      section == "S19: Total Expenditure" ~ 13,
+      section == "S18: Anthropometrics" ~ 36,
+      section == "To Complete Interview" ~ 37,
+      TRUE ~ 99
+    )
+  ) |>
+	dplyr::arrange(section_num) |>
+	dplyr::select(-section_num)
+	
+
+saveRDS(
+  object = duration_by_non_indiv_module,
+  file = here::here("data", "04_created", "duration_by_non_indiv_module.rds")
+)
+
+# ==============================================================================
+# Compute duration of individual module
 # ==============================================================================
 
 # identify individual sections
